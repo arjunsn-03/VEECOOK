@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Start Cooking: {{ recipe_name }}{% endblock %}
+
+{% block content %}
+    <div class="start-cooking-container">
+        <h1>Start Cooking: {{ recipe_name }}</h1>
+
+        <h2>Ingredients Required:</h2>
+        <ul>
+            {% for ingredient, quantity in recipe['ingredients'].items() %}
+                <li>{{ ingredient }}: {{ quantity }}</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Measure the following ingredients:</li>
+            <ul>
+                {% for ingredient, quantity in recipe['ingredients'].items() %}
+                    <li>{{ ingredient }}: {{ quantity }}</li>
+                {% endfor %}
+            </ul>
+            <li>Load the ingredients into the following containers:</li>
+            <ul>
+                <li>Container 1: Carrot</li>
+                <li>Container 2: Green Peas</li>
+                <li>Container 3: Corn Flour</li>
+                <li>Container 4: Water</li>
+                <li>Container 5: Oil</li>
+            </ul>
+        </ol>
+
+        <form method="POST" action="{{ url_for('start_cooking', recipe=recipe_name) }}" onsubmit="return handleConfirmation()">
+            <label>Are all ingredients loaded correctly?</label>
+            <label>
+                <input type="radio" name="confirmation" value="yes" required> Yes
+            </label>
+            <label>
+                <input type="radio" name="confirmation" value="no" required> No
+            </label>
+            <br>
+            <p class="warning-message">Warning: Incorrect loading of ingredients can lead to incorrect food preparation.</p>
+            <button type="submit">Start Cooking</button>
+        </form>
+    </div>
+
+    <script>
+        function handleConfirmation() {
+            const confirmation = document.querySelector('input[name="confirmation"]:checked').value;
+            if (confirmation === "no") {
+                alert("Cooking can only begin after ingredients are loaded correctly. Please ensure all ingredients are loaded properly.");
+                return false; // Stay on the same page
+            }
+            return true; // Proceed with form submission
+        }
+    </script>
+{% endblock %}

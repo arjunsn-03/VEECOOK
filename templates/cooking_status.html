@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Cooking Status: {{ recipe_name }}{% endblock %}
+
+{% block content %}
+    <h1>Cooking Status: {{ recipe_name }}</h1>
+    <div style="text-align: center;">
+        <img src="{{ url_for('static', filename='images/' + recipe_name + '.jpg') }}" alt="{{ recipe_name }}" style="width: 300px; height: auto;">
+        
+        {% if start_time == "now" %}
+            <p>Cooking has started. Time remaining: <span id="timeRemaining">{{ recipe['cooking_time'] }}:00</span></p>
+        {% else %}
+            <p>Cooking is scheduled to start at: {{ start_time }}</p>
+        {% endif %}
+        
+        <button onclick="abortCooking()">Abort Cooking</button>
+        <a href="{{ url_for('main') }}"><button>Go Back to Main Page</button></a>
+        
+        {% if start_time != "now" %}
+            <a href="{{ url_for('edit_schedule', recipe=recipe_name) }}"><button>Edit Start Time</button></a>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let startNow = "{{ start_time }}" === "now"; // Convert Jinja to JavaScript boolean
+            let timeRemaining = parseInt("{{ recipe['cooking_time'] }}") * 60; // Convert to integer
+
+            function updateTimer() {
+                if (timeRemaining > 0) {
+                    timeRemaining--;  
+                    let minutes = Math.floor(timeRemaining / 60);
+                    let seconds = timeRemaining % 60;
+                    document.getElementById("timeRemaining").innerText = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+                    setTimeout(updateTimer, 1000);  // Update every second
+                } else {
+                    document.getElementById("timeRemaining").innerText = "Cooking Completed!";
+                }
+            }
+
+            // Start timer only if cooking starts now
+            if (startNow) {
+                updateTimer();
+            }
+        });
+
+        function abortCooking() {
+            if (confirm("Are you sure you want to abort cooking?")) {
+                window.location.href = "{{ url_for('abort_cooking', recipe=recipe_name) }}";
+            }
+        }
+    </script>
+{% endblock %}

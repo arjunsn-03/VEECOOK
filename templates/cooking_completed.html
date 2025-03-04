@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Cooking Completed{% endblock %}
+
+{% block content %}
+    <h1>Cooking Completed!</h1>
+    <p>Your {{ recipe_name }} is ready. Enjoy your meal!</p>
+    <a href="{{ url_for('main') }}"><button>Go to Home</button></a>
+{% endblock %}

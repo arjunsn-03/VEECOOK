@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f3f3, #ffffff);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        /* Form Container */
+        form {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+        }
+
+        /* Labels */
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        /* Input Fields */
+        input[type="text"], 
+        input[type="email"], 
+        input[type="tel"], 
+        input[type="number"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border: 1px solid #007bff;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        /* Checkbox Styling */
+        input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        /* Buttons */
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+            transition: 0.3s;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+
+    <h1>User Profile</h1>
+
+    <form method="POST">
+        <h2>Personal Information</h2>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{ user.name }}" required>
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="{{ user.username }}" readonly>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{ user.email }}" required>
+
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" value="{{ user.phone }}">
+
+        <label for="address">Address:</label>
+        <textarea id="address" name="address">{{ user.address }}</textarea>
+
+        <h2>Dietary Preferences & Restrictions</h2>
+        <label for="diet_type">Diet Type:</label>
+        <select id="diet_type" name="diet_type">
+            <option value="Vegetarian" {% if user.diet_type == 'Vegetarian' %}selected{% endif %}>Vegetarian</option>
+            <option value="Vegan" {% if user.diet_type == 'Vegan' %}selected{% endif %}>Vegan</option>
+            <option value="Keto" {% if user.diet_type == 'Keto' %}selected{% endif %}>Keto</option>
+            <option value="Other" {% if user.diet_type == 'Other' %}selected{% endif %}>Other</option>
+        </select>
+
+        <label for="allergies">Allergies:</label>
+        <input type="text" id="allergies" name="allergies" value="{{ user.allergies }}">
+
+        <label for="preferred_cuisines">Preferred Cuisines:</label>
+        <input type="text" id="preferred_cuisines" name="preferred_cuisines" value="{{ user.preferred_cuisines }}">
+
+        <h2>Cooking Preferences</h2>
+        <label for="spice_level">Spice Level:</label>
+        <select id="spice_level" name="spice_level">
+            <option value="Mild" {% if user.spice_level == 'Mild' %}selected{% endif %}>Mild</option>
+            <option value="Medium" {% if user.spice_level == 'Medium' %}selected{% endif %}>Medium</option>
+            <option value="Spicy" {% if user.spice_level == 'Spicy' %}selected{% endif %}>Spicy</option>
+        </select>
+
+        <label for="cooking_time_preference">Cooking Time Preference:</label>
+        <select id="cooking_time_preference" name="cooking_time_preference">
+            <option value="Quick Meals" {% if user.cooking_time_preference == 'Quick Meals' %}selected{% endif %}>Quick Meals</option>
+            <option value="Slow Cooking" {% if user.cooking_time_preference == 'Slow Cooking' %}selected{% endif %}>Slow Cooking</option>
+        </select>
+
+        <label for="favorite_ingredients">Favorite Ingredients:</label>
+        <input type="text" id="favorite_ingredients" name="favorite_ingredients" value="{{ user.favorite_ingredients }}">
+
+        <label for="auto_suggestions">
+            <input type="checkbox" id="auto_suggestions" name="auto_suggestions" {% if user.auto_suggestions %}checked{% endif %}> Enable Auto-Suggestions
+        </label>
+
+        <h2>Account & App Settings</h2>
+        <label for="language_preference">Language Preference:</label>
+        <select id="language_preference" name="language_preference">
+            <option value="English" {% if user.language_preference == 'English' %}selected{% endif %}>English</option>
+            <option value="Spanish" {% if user.language_preference == 'Spanish' %}selected{% endif %}>Spanish</option>
+            <option value="French" {% if user.language_preference == 'French' %}selected{% endif %}>French</option>
+        </select>
+
+        <label for="notification_preferences">Notification Preferences:</label>
+        <input type="text" id="notification_preferences" name="notification_preferences" value="{{ user.notification_preferences }}">
+
+        <label for="subscription_status">Subscription Status:</label>
+        <input type="text" id="subscription_status" name="subscription_status" value="{{ user.subscription_status }}">
+
+        <h2>Additional Features</h2>
+        <label for="voice_assistant_integration">
+            <input type="checkbox" id="voice_assistant_integration" name="voice_assistant_integration" {% if user.voice_assistant_integration %}checked{% endif %}> Enable Voice Assistant Integration
+        </label>
+
+        <label for="recipe_sharing_preferences">Recipe Sharing Preferences:</label>
+        <input type="text" id="recipe_sharing_preferences" name="recipe_sharing_preferences" value="{{ user.recipe_sharing_preferences }}">
+
+        <label for="family_mode">
+            <input type="checkbox" id="family_mode" name="family_mode" {% if user.family_mode %}checked{% endif %}> Enable Family Mode
+        </label>
+
+        <button type="submit">Save Changes</button>
+    </form>
+{% endblock %}

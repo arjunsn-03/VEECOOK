@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Automatic Cooking Machine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <script>
+        // Show pop-up if there's a message (error or success)
+        window.onload = function() {
+            const message = document.getElementById("message").value;
+            if (message) {
+                alert(message);
+            }
+        };
+    </script>
+
+    <style>
+        /* Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        /* Background Animation */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #3E1E68, #8E54E9, #4776E6);
+            background-size: 300% 300%;
+            animation: gradientBG 10s infinite alternate ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            color: #fff;
+            margin: 0;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* Glassmorphism Container */
+        .register-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Animated Input Fields */
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1em;
+            transition: 0.3s ease;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input:focus {
+            outline: none;
+            border: 1px solid #fff;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(45deg, #6A11CB, #2575FC);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0px 5px 15px rgba(106, 17, 203, 0.4);
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #8E54E9, #4776E6);
+            transform: translateY(-3px);
+            box-shadow: 0px 10px 25px rgba(106, 17, 203, 0.6);
+        }
+
+        /* Fade-in Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8em; }
+            .btn { font-size: 1em; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hidden input to store error or success message -->
+    <input type="hidden" id="message" value="{{ message or '' }}">
+
+    <div class="register-container fade-in">
+        <h1>Register</h1>
+
+        <form method="POST" action="{{ url_for('register') }}">
+            <input type="text" name="name" placeholder="Full Name" required>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" class="btn">Register</button>
+        </form>
+
+        <a href="{{ url_for('home') }}"><button class="btn">Back to Home</button></a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Food Information{% endblock %}
+
+{% block content %}
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f3f3, #ffffff);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        /* Content Container */
+        .info-container {
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        /* Paragraph */
+        p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* List Styling */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            font-size: 1.1em;
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            transition: background 0.3s ease-in-out;
+        }
+
+        ul li:hover {
+            background: #bbdefb;
+        }
+
+        /* Strong Tags */
+        strong {
+            color: #007bff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            h1 { font-size: 2em; }
+            p, ul li { font-size: 1em; }
+        }
+    </style>
+
+    <div class="info-container">
+        <h1>Food Information</h1>
+        <p>Learn about healthy eating habits, nutritional facts, and more here.</p>
+
+        <h2>Healthy Eating Tips</h2>
+        <ul>
+            <li>🍎 Eat a variety of fruits and vegetables.</li>
+            <li>🌾 Choose whole grains over refined grains.</li>
+            <li>⚖️ Limit added sugars and saturated fats.</li>
+            <li>💧 Stay hydrated by drinking plenty of water.</li>
+        </ul>
+
+        <h2>Nutritional Facts</h2>
+        <p>Here are some key nutritional facts about common ingredients:</p>
+        <ul>
+            <li><strong>🥕 Carrots:</strong> Rich in beta-carotene, fiber, and vitamin K.</li>
+            <li><strong>🌿 Green Peas:</strong> High in protein, fiber, and vitamins A and C.</li>
+            <li><strong>🌽 Corn Flour:</strong> A good source of carbohydrates and fiber.</li>
+            <li><strong>🧂 Salt:</strong> Essential in small amounts, but excessive intake can lead to health issues.</li>
+        </ul>
+    </div>
+{% endblock %}

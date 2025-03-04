@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Cooking Schedule: {{ recipe_name }}{% endblock %}
+
+{% block content %}
+    <div class="cooking-schedule-card">
+        <!-- Image of the Dish -->
+        <img src="{{ url_for('static', filename='images/' + recipe_name + '.jpg') }}" alt="{{ recipe_name }}">
+
+        <!-- Name of the Dish -->
+        <h2>{{ recipe_name }}</h2>
+
+        <!-- Cooking Time Required -->
+        <p>Cooking Time Required: {{ recipe['cooking_time'] }} minutes</p>
+
+        <!-- Question -->
+        <p>Do you wish to start cooking now or schedule for later?</p>
+
+        <!-- Buttons -->
+        <div class="buttons">
+            <button onclick="startNow()">Start Now</button>
+            <button onclick="scheduleLater()">Schedule for Later</button>
+        </div>
+
+        <!-- Warning Message -->
+        <p class="warning-message">
+            Warning: If cooking starts now, you won't be able to stop in between. If scheduled for later, you can modify the time later.
+        </p>
+    </div>
+
+    <script>
+        function startNow() {
+            if (confirm("If cooking starts now, you won't be able to stop in between. Do you want to proceed?")) {
+                window.location.href = "{{ url_for('cooking_status', recipe=recipe_name, start_time='now') }}";
+            }
+        }
+    
+        function scheduleLater() {
+            const scheduleTime = prompt("Enter the time to start cooking (e.g., 14:30 for 2:30 PM):");
+            if (scheduleTime) {
+                // Pass the scheduled time as a query parameter
+                window.location.href = "{{ url_for('cooking_status', recipe=recipe_name) }}?start_time=" + scheduleTime;
+            }
+        }
+    </script>
+{% endblock %}
