@@ -1,44 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}VECOOK{% endblock %}</title>
+    <title>VeCook - Smart Cooking Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    <!-- Hamburger Menu -->
-    <div class="menu-icon" onclick="toggleMenu()">
-        <div></div>
-        <div></div>
-        <div></div>
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="{{ url_for('home') }}" class="nav-logo">VeCook</a>
+                <div class="nav-links">
+                    {% if session.get('logged_in') %}
+                        <a href="{{ url_for('main') }}">
+                            <span class="material-icons">home</span>
+                            Dashboard
+                        </a>
+                        <a href="{{ url_for('food_info') }}">
+                            <span class="material-icons">restaurant_menu</span>
+                            Food Info
+                        </a>
+                        <a href="{{ url_for('recipe_status') }}">
+                            <span class="material-icons">timer</span>
+                            Status
+                        </a>
+                        <a href="{{ url_for('profile') }}">
+                            <span class="material-icons">person</span>
+                            Profile
+                        </a>
+                        <a href="{{ url_for('logout') }}">
+                            <span class="material-icons">logout</span>
+                            Logout
+                        </a>
+                    {% elif request.endpoint == 'home' %}
+                        <a href="{{ url_for('login') }}">
+                            <span class="material-icons">login</span>
+                            Login
+                        </a>
+                        <a href="{{ url_for('register') }}">
+                            <span class="material-icons">person_add</span>
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
     </div>
-    <div class="menu" id="menu">
-        <a href="{{ url_for('main') }}">Home</a>
-        <a href="{{ url_for('food_info') }}">Food Information</a>
-        <a href="{{ url_for('recipe_status') }}">Recipe Status</a>
-        <a href="{{ url_for('update_ingredients') }}">Update Ingredients</a>
-        <a href="{{ url_for('profile') }}">Profile</a>
-        <a href="{{ url_for('logout') }}">Log Out</a>
-    </div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
-
-    <!-- Page Content -->
-    {% block content %}{% endblock %}
-
-    <script>
-        function toggleMenu() {
-            const menu = document.getElementById("menu");
-            menu.style.display = menu.style.display === "block" ? "none" : "block";
+    <style>
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-    </script>
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary) !important;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .material-icons {
+            font-size: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
 </body>
 </html>

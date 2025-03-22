@@ -3,88 +3,296 @@
 {% block title %}Food Information{% endblock %}
 
 {% block content %}
-    <style>
-        /* General Styling */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f3f3f3, #ffffff);
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1, h2 {
-            text-align: center;
-            color: #333;
-        }
-
-        /* Content Container */
-        .info-container {
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
-            margin: 20px auto;
-            text-align: center;
-        }
-
-        /* Paragraph */
-        p {
-            font-size: 1.1em;
-            color: #555;
-        }
-
-        /* List Styling */
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        ul li {
-            font-size: 1.1em;
-            background: #e3f2fd;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 5px 0;
-            transition: background 0.3s ease-in-out;
-        }
-
-        ul li:hover {
-            background: #bbdefb;
-        }
-
-        /* Strong Tags */
-        strong {
-            color: #007bff;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            h1 { font-size: 2em; }
-            p, ul li { font-size: 1em; }
-        }
-    </style>
-
-    <div class="info-container">
-        <h1>Food Information</h1>
-        <p>Learn about healthy eating habits, nutritional facts, and more here.</p>
-
-        <h2>Healthy Eating Tips</h2>
-        <ul>
-            <li>🍎 Eat a variety of fruits and vegetables.</li>
-            <li>🌾 Choose whole grains over refined grains.</li>
-            <li>⚖️ Limit added sugars and saturated fats.</li>
-            <li>💧 Stay hydrated by drinking plenty of water.</li>
-        </ul>
-
-        <h2>Nutritional Facts</h2>
-        <p>Here are some key nutritional facts about common ingredients:</p>
-        <ul>
-            <li><strong>🥕 Carrots:</strong> Rich in beta-carotene, fiber, and vitamin K.</li>
-            <li><strong>🌿 Green Peas:</strong> High in protein, fiber, and vitamins A and C.</li>
-            <li><strong>🌽 Corn Flour:</strong> A good source of carbohydrates and fiber.</li>
-            <li><strong>🧂 Salt:</strong> Essential in small amounts, but excessive intake can lead to health issues.</li>
-        </ul>
+<div class="food-info-container">
+    <!-- Header Section -->
+    <div class="info-header">
+        <h1>Food & Nutrition Guide</h1>
+        <p class="subtitle">Discover healthy eating habits and food facts to enhance your cooking journey</p>
     </div>
+
+    <!-- Quick Facts Carousel -->
+    <div class="facts-carousel">
+        <div class="fact-card">
+            <span class="material-icons">eco</span>
+            <h3>Plant-Based Benefits</h3>
+            <p>Plant-based diets can reduce the risk of heart disease by up to 40% and provide essential nutrients.</p>
+        </div>
+        <div class="fact-card">
+            <span class="material-icons">water_drop</span>
+            <h3>Hydration Tips</h3>
+            <p>Drinking water before meals can boost metabolism by 30% and help maintain healthy portion control.</p>
+        </div>
+        <div class="fact-card">
+            <span class="material-icons">schedule</span>
+            <h3>Meal Timing</h3>
+            <p>Eating at regular intervals helps maintain blood sugar levels and prevents overeating.</p>
+        </div>
+    </div>
+
+    <!-- Main Content Sections -->
+    <div class="info-grid">
+        <!-- Healthy Eating Section -->
+        <div class="info-section">
+            <div class="section-header">
+                <span class="material-icons">restaurant</span>
+                <h2>Healthy Eating Guidelines</h2>
+            </div>
+            <div class="content-card">
+                <img src="{{ url_for('static', filename='images/healthy-plate.jpg') }}" alt="Healthy Plate">
+                <div class="card-content">
+                    <h3>The Perfect Plate</h3>
+                    <ul class="info-list">
+                        <li>½ plate: Vegetables and fruits</li>
+                        <li>¼ plate: Whole grains</li>
+                        <li>¼ plate: Protein sources</li>
+                        <li>Add healthy fats in moderation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nutritional Facts -->
+        <div class="info-section">
+            <div class="section-header">
+                <span class="material-icons">science</span>
+                <h2>Nutritional Facts</h2>
+            </div>
+            <div class="content-card">
+                <img src="{{ url_for('static', filename='images/nutrients.jpg') }}" alt="Nutrients">
+                <div class="card-content">
+                    <h3>Essential Nutrients</h3>
+                    <div class="nutrient-grid">
+                        <div class="nutrient-item">
+                            <span class="material-icons">fitness_center</span>
+                            <h4>Proteins</h4>
+                            <p>Build and repair tissues</p>
+                        </div>
+                        <div class="nutrient-item">
+                            <span class="material-icons">bolt</span>
+                            <h4>Carbs</h4>
+                            <p>Primary energy source</p>
+                        </div>
+                        <div class="nutrient-item">
+                            <span class="material-icons">opacity</span>
+                            <h4>Healthy Fats</h4>
+                            <p>Support cell growth</p>
+                        </div>
+                        <div class="nutrient-item">
+                            <span class="material-icons">diamond</span>
+                            <h4>Minerals</h4>
+                            <p>Vital body functions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lifestyle Tips -->
+        <div class="info-section">
+            <div class="section-header">
+                <span class="material-icons">psychology</span>
+                <h2>Lifestyle Tips</h2>
+            </div>
+            <div class="content-card">
+                <img src="{{ url_for('static', filename='images/lifestyle.jpg') }}" alt="Healthy Lifestyle">
+                <div class="card-content">
+                    <h3>Healthy Living Habits</h3>
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <span class="material-icons">timer</span>
+                            <h4>Regular Meals</h4>
+                            <p>Eat at consistent times daily</p>
+                        </div>
+                        <div class="tip-card">
+                            <span class="material-icons">local_drink</span>
+                            <h4>Stay Hydrated</h4>
+                            <p>Drink 8 glasses of water daily</p>
+                        </div>
+                        <div class="tip-card">
+                            <span class="material-icons">nights_stay</span>
+                            <h4>Quality Sleep</h4>
+                            <p>Aim for 7-9 hours nightly</p>
+                        </div>
+                        <div class="tip-card">
+                            <span class="material-icons">directions_run</span>
+                            <h4>Stay Active</h4>
+                            <p>30 minutes exercise daily</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.food-info-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.info-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.info-header h1 {
+    font-size: 48px;
+    margin: 0 0 16px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 20px;
+    color: var(--text-secondary);
+}
+
+.facts-carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.fact-card {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fact-card .material-icons {
+    font-size: 48px;
+    color: var(--accent-primary);
+    margin-bottom: 16px;
+}
+
+.fact-card h3 {
+    color: var(--text-primary);
+    margin: 0 0 12px;
+}
+
+.fact-card p {
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.info-grid {
+    display: grid;
+    gap: 48px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.section-header .material-icons {
+    font-size: 32px;
+    color: var(--accent-primary);
+}
+
+.section-header h2 {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.content-card {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.content-card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 24px;
+}
+
+.card-content h3 {
+    color: var(--text-primary);
+    margin: 0 0 16px;
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-list li {
+    color: var(--text-secondary);
+    margin: 8px 0;
+    padding-left: 24px;
+    position: relative;
+}
+
+.info-list li::before {
+    content: '•';
+    color: var(--accent-primary);
+    position: absolute;
+    left: 0;
+}
+
+.nutrient-grid, .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.nutrient-item, .tip-card {
+    text-align: center;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nutrient-item .material-icons, .tip-card .material-icons {
+    font-size: 32px;
+    color: var(--accent-primary);
+    margin-bottom: 12px;
+}
+
+.nutrient-item h4, .tip-card h4 {
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.nutrient-item p, .tip-card p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .info-header h1 {
+        font-size: 36px;
+    }
+
+    .subtitle {
+        font-size: 18px;
+    }
+
+    .content-card img {
+        height: 200px;
+    }
+
+    .nutrient-grid, .tips-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
 {% endblock %}

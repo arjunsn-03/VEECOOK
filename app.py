@@ -1,291 +1,67 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-import time  # ✅ Fix: Import time module
+from werkzeug.security import generate_password_hash, check_password_hash
+from supabase import create_client, Client
+from datetime import datetime, timedelta
+import time
+
+# ✅ Supabase Credentials
+SUPABASE_URL = "https://rjuptubeqliyqbgixmgu.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdXB0dWJlcWxpeXFiZ2l4bWd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEwNzU5MDgsImV4cCI6MjA1NjY1MTkwOH0._PR0pz-YX5I1nTXcrTRfFrnuqbIiIPEdbGaJjZnHHok"
+
+# ✅ Initialize Supabase Client
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Required for session management
+app.secret_key = "your_secret_key"
 
-# Mock data for ingredients and recipes
+# ✅ Ingredients and Recipes
 ingredients = {
-    "chilli": 50,  # in grams
-    "turmeric": 100,
-    "salt": 200,
-    "carrot": 5,  # in units
-    "green_peas": 150,  # in grams
-    "corn_flour": 300,
-    "oil": 500,
-    "water": 1000  # in ml
+    "chilli": 50, "turmeric": 100, "salt": 200, "carrot": 5,
+    "green_peas": 150, "corn_flour": 300, "oil": 500, "water": 1000
 }
 
 recipes = {
     "veg_soup": {
-        "ingredients": {
-            "carrot": 2,  # 2 units
-            "green_peas": 50,  # 50 grams
-            "corn_flour": 20,
-            "salt": 10,
-            "water": 500
-        },
-        "steps": [
-            {"ingredient": "water", "time": 0},
-            {"ingredient": "carrot", "time": 4},
-            {"ingredient": "green_peas", "time": 3},
-            {"ingredient": "corn_flour", "time": 10},
-            {"ingredient": "salt", "time": 12}
-        ],
-        "cooking_time": 20,  # in minutes
-        "description": "A healthy and delicious vegetable soup.",
-        "veg": True,
-        "allergens": "None",
-        "calories": 150
+        "ingredients": {"carrot": 2, "green_peas": 50, "corn_flour": 20, "salt": 10, "water": 500},
+        "steps": [{"ingredient": "water", "time": 0}, {"ingredient": "carrot", "time": 4}],
+        "cooking_time": 20, "description": "A healthy soup.", "veg": True, "calories": 150
     },
     "spicy_soup": {
-        "ingredients": {
-            "chilli": 10,
-            "turmeric": 5,
-            "salt": 10,
-            "carrot": 1,
-            "water": 500
-        },
-        "steps": [
-            {"ingredient": "carrot", "time": 0},
-            {"ingredient": "chilli", "time": 5},
-            {"ingredient": "turmeric", "time": 10},
-            {"ingredient": "salt", "time": 15}
-        ],
-        "cooking_time": 20,
-        "description": "A spicy and flavorful soup for those who love heat.",
-        "veg": True,
-        "allergens": "None",
-        "calories": 200
+        "ingredients": {"chilli": 10, "turmeric": 5, "salt": 10, "carrot": 1, "water": 500},
+        "steps": [{"ingredient": "carrot", "time": 0}, {"ingredient": "chilli", "time": 5}],
+        "cooking_time": 20, "description": "A spicy soup.", "veg": True, "calories": 200
     }
 }
 
-# Mock user database
-users = {
-    "user1": {
-        "password": generate_password_hash("password1"),
-        "name": "John Doe",
-        "email": "john.doe@example.com",
-        "profile_picture": "default.jpg",
-        "phone": "",
-        "address": "",
-        "diet_type": "",
-        "allergies": "",
-        "preferred_cuisines": "",
-        "disliked_ingredients": "",
-        "spice_level": "",
-        "cooking_time_preference": "",
-        "favorite_ingredients": "",
-        "auto_suggestions": "Off",
-        "connected_machine": "",
-        "ingredient_availability": "",
-        "preferred_cooking_mode": "",
-        "caloric_intake_goal": "",
-        "health_goals": "",
-        "meal_history": [],
-        "favorite_recipes": [],
-        "language_preference": "English",
-        "notification_preferences": "On",
-        "subscription_status": "Free",
-        "linked_accounts": [],
-        "voice_assistant_integration": "Off",
-        "recipe_sharing_preferences": "Private",
-        "family_mode": "Off"
-    }
-}
+scheduled_recipes = {}
+ongoing_recipes = {}
 
-# Global variables for scheduled and ongoing recipes
-scheduled_recipes = {
-    "veg_soup": {"start_time": "14:30"},
-    "spicy_soup": {"start_time": "15:00"}
-}
+# Add these helper functions before the routes
+def has_ongoing_recipe():
+    return len(ongoing_recipes) > 0
 
-ongoing_recipes = {
-    "veg_soup": {"time_remaining": 10}
-}
+def get_ongoing_recipe():
+    if ongoing_recipes:
+        return list(ongoing_recipes.keys())[0]
+    return None
 
-@app.route("/")
-def home():
-    return render_template("home.html")
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form.get("username", "")
-        password = request.form.get("password", "")
-
-        # ✅ Ensure username exists in users dictionary
-        if username not in users:
-            # flash("Invalid username or password!", "error")
-            return redirect(url_for("login"))
-
-        # ✅ Ensure "password" key exists
-        if "password" not in users[username]:
-            #flash("Invalid username or password!", "error")
-            return redirect(url_for("login"))
-
-        # ✅ Now check password safely
-        if check_password_hash(users[username]["password"], password):
-            session["logged_in"] = True
-            session["username"] = username
-            flash("Login successful!", "success")
-            return redirect(url_for("main"))
-        else:
-           #u flash("Invalid username or password!", "error")
-            return redirect(url_for("login"))
-
-    return render_template("login.html")
-
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        name = request.form.get("name")
-        email = request.form.get("email")
-        
-        if username in users:
-            flash("Username already exists", "error")
-            return redirect(url_for("register"))
-        
-        # Hash the password before storing it
-        hashed_password = generate_password_hash(password)
-        
-        users[username] = {
-            "password": hashed_password,
-            "name": name,
-            "email": email,
-        }
-        
-        flash("Registration successful! Please login.", "success")
-        return redirect(url_for("login"))
-    
-    return render_template("register.html")
-
-@app.route("/main")
-def main():
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    return render_template("main.html")
-
-@app.route("/choose_recipe")
-def choose_recipe():
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    return render_template("choose_recipe.html", recipes=recipes)
-
-@app.route("/update_ingredients", methods=["GET", "POST"])
-def update_ingredients():
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    if request.method == "POST":
-        for ingredient in ingredients:
-            ingredients[ingredient] = int(request.form.get(ingredient, 0))
-        flash("Ingredients updated successfully!", "success")
-        return redirect(url_for("choose_recipe"))
-    return render_template("update_ingredients.html", ingredients=ingredients)
-
-@app.route("/start_cooking/<recipe>", methods=["GET", "POST"])
-def start_cooking(recipe):
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    
-    if request.method == "POST":
-        confirmation = request.form.get("confirmation")
-        if confirmation == "yes":
-            return redirect(url_for("cooking_schedule", recipe=recipe))
-        else:
-            flash("Please ensure all ingredients are loaded correctly", "error")
-            return redirect(url_for("choose_recipe"))
-    
-    # Pass the recipe details and scheduled_recipes to the template
-    return render_template("start_cooking.html", recipe=recipes[recipe], recipe_name=recipe, scheduled_recipes=scheduled_recipes)
-
-@app.route("/cooking_schedule/<recipe>")
-def cooking_schedule(recipe):
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    return render_template("cooking_schedule.html", recipe=recipes[recipe], recipe_name=recipe)
-
-ongoing_recipes = {}  # Stores active timers
-
-@app.route("/cooking_status/<recipe>")
-def cooking_status(recipe):
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-
-    start_time = request.args.get("start_time", "now")
-    
-    if start_time == "now":
-        # If cooking starts now, initialize the timer
-        if recipe not in ongoing_recipes:  # Prevent overwriting if already cooking
-            ongoing_recipes[recipe] = {
-                "time_remaining": recipes[recipe]["cooking_time"] * 60,  # Convert to seconds
-                "start_timestamp": int(time.time())  # Store start time
-            }
+def check_schedule_conflict(recipe, start_time):
+    if not start_time or start_time == "now":
+        start_time = datetime.now()
     else:
-        # If scheduled for later, add it to scheduled_recipes
-        scheduled_recipes[recipe] = {"start_time": start_time}
+        start_time = datetime.strptime(start_time, "%Y-%m-%dT%H:%M")
     
-    return render_template("cooking_status.html", recipe=recipes[recipe], recipe_name=recipe, start_time=start_time)
-
-@app.route("/get_remaining_time/<recipe>")
-def get_remaining_time(recipe):
-    if recipe in ongoing_recipes:
-        elapsed_time = int(time.time()) - ongoing_recipes[recipe]["start_timestamp"]
-        remaining_time = max(ongoing_recipes[recipe]["time_remaining"] - elapsed_time, 0)
-        return jsonify({"remaining_time": remaining_time})
-    return jsonify({"remaining_time": 0})
-
-@app.route("/abort_cooking/<recipe>")
-def abort_cooking(recipe):
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
+    cooking_time = recipes[recipe]["cooking_time"]
+    end_time = start_time + timedelta(minutes=cooking_time)
     
-    # Remove the recipe from scheduled or ongoing recipes
-    if recipe in scheduled_recipes:
-        del scheduled_recipes[recipe]
-        flash(f"Aborted scheduled cooking for {recipe}", "success")
-    elif recipe in ongoing_recipes:
-        del ongoing_recipes[recipe]
-        flash(f"Aborted ongoing cooking for {recipe}", "success")
-    else:
-        flash(f"No active or scheduled cooking found for {recipe}", "error")
+    for scheduled_recipe, schedule_info in scheduled_recipes.items():
+        scheduled_start = datetime.strptime(schedule_info["start_time"], "%Y-%m-%dT%H:%M")
+        scheduled_end = scheduled_start + timedelta(minutes=recipes[scheduled_recipe]["cooking_time"])
+        
+        if (start_time <= scheduled_end and end_time >= scheduled_start):
+            return scheduled_recipe, schedule_info["start_time"]
     
-    return redirect(url_for("recipe_status"))
-
-@app.route("/cooking_completed/<recipe>")
-def cooking_completed(recipe):
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    return render_template("cooking_completed.html", recipe_name=recipe)
-
-@app.route("/food_info")
-def food_info():
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    return render_template("food_info.html")
-
-@app.route("/recipe_status")
-def recipe_status():
-    if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
-        return redirect(url_for("home"))
-    
-    # Pass the variables to the template
-    return render_template("recipe_status.html", scheduled_recipes=scheduled_recipes, ongoing_recipes=ongoing_recipes)
+    return None, None
 
 @app.route("/edit_schedule/<recipe>", methods=["GET", "POST"])
 def edit_schedule(recipe):
@@ -296,60 +72,288 @@ def edit_schedule(recipe):
     if request.method == "POST":
         new_time = request.form.get("new_time")
         if new_time:
-            scheduled_recipes[recipe]["start_time"] = new_time
+            scheduled_recipes[recipe] = {"start_time": new_time}
             flash(f"Updated {recipe} to start at {new_time}", "success")
             return redirect(url_for("cooking_status", recipe=recipe, start_time=new_time))
-    
+
     return render_template("edit_schedule.html", recipe_name=recipe)
 
+@app.route("/abort_cooking/<recipe>", methods=["GET", "POST"])
+def abort_cooking(recipe):
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+
+    # First check for ongoing recipe
+    if recipe in ongoing_recipes:
+        del ongoing_recipes[recipe]
+        flash(f"Cooking for {recipe} has been aborted.", "success")
+        return redirect(url_for("recipe_status"))
+
+    # Then check for scheduled recipe
+    for schedule_key, schedule_info in scheduled_recipes.items():
+        if schedule_key == recipe:
+            recipe_name = schedule_info["recipe_name"]
+            del scheduled_recipes[recipe]
+            flash(f"Scheduled cooking for {recipe_name} has been cancelled.", "success")
+            return redirect(url_for("recipe_status"))
+
+    # If neither found
+    flash("Recipe not found.", "error")
+    return redirect(url_for("recipe_status"))
+
+@app.route("/start_cooking/<recipe>", methods=["GET", "POST"])
+def start_cooking(recipe):
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        confirmation = request.form.get("confirmation")
+        if confirmation == "yes":
+            return redirect(url_for("cooking_schedule", recipe=recipe))
+        else:
+            flash("Load ingredients first.", "error")
+            return redirect(url_for("choose_recipe"))
+
+    return render_template("start_cooking.html", recipe=recipes[recipe], recipe_name=recipe)
+
+@app.route("/cooking_schedule/<recipe>", methods=["GET", "POST"])
+def cooking_schedule(recipe):
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "start_now":
+            # Check for ongoing recipe before starting
+            ongoing_recipe = get_ongoing_recipe()
+            if ongoing_recipe:
+                flash(f"Cannot start now. There is an ongoing recipe: {ongoing_recipe}. Please schedule this recipe for later.", "warning")
+                return render_template("cooking_schedule.html", recipe=recipes[recipe], recipe_name=recipe, has_ongoing_recipe=True)
+            
+            ongoing_recipes[recipe] = {
+                "start_time": datetime.now(),
+                "cooking_time": recipes[recipe]["cooking_time"]
+            }
+            flash(f"Cooking for {recipe} has started.", "success")
+            return redirect(url_for("cooking_status", recipe=recipe, start_time="now"))
+        elif action == "schedule_later":
+            schedule_time = request.form.get("schedule_time")
+            if schedule_time:
+                # Create a unique key using recipe name and timestamp
+                schedule_key = f"{recipe}_{int(time.time())}"
+                scheduled_recipes[schedule_key] = {
+                    "recipe_name": recipe,
+                    "start_time": schedule_time
+                }
+                # Format the date and time
+                schedule_datetime = datetime.strptime(schedule_time, "%Y-%m-%dT%H:%M")
+                formatted_date = schedule_datetime.strftime("%Y-%m-%d")
+                formatted_time = schedule_datetime.strftime("%H:%M")
+                flash(f"Cooking for {recipe} is scheduled to start at: {formatted_date} at time {formatted_time}.", "success")
+                return redirect(url_for("cooking_status", recipe=recipe, start_time=schedule_time))
+            else:
+                flash("Please enter a valid time.", "error")
+                return render_template("cooking_schedule.html", recipe=recipes[recipe], recipe_name=recipe, has_ongoing_recipe=bool(get_ongoing_recipe()))
+
+    # For GET requests, check ongoing recipe
+    ongoing_recipe = get_ongoing_recipe()
+    return render_template("cooking_schedule.html", recipe=recipes[recipe], recipe_name=recipe, has_ongoing_recipe=bool(ongoing_recipe))
+
+@app.route("/cooking_status/<recipe>")
+def cooking_status(recipe):
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+
+    start_time = request.args.get("start_time", "now")
+    if start_time == "now":
+        ongoing_recipes[recipe] = {
+            "start_time": datetime.now(),
+            "cooking_time": recipes[recipe]["cooking_time"]
+        }
+    else:
+        scheduled_recipes[recipe] = {
+            "start_time": start_time
+        }
+
+    return render_template("cooking_status.html", recipe=recipes[recipe], recipe_name=recipe, start_time=start_time)
+
+@app.route("/get_remaining_time/<recipe>")
+def get_remaining_time(recipe):
+    if recipe in ongoing_recipes:
+        start_time = ongoing_recipes[recipe]["start_time"]
+        cooking_time = ongoing_recipes[recipe]["cooking_time"]
+        elapsed_time = (datetime.now() - start_time).total_seconds()
+        remaining_time = max(cooking_time * 60 - elapsed_time, 0)
+        return jsonify({"remaining_time": int(remaining_time)})
+    return jsonify({"remaining_time": 0})
+
+# ✅ Register User
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        full_name = request.form.get("name")
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        hashed_password = generate_password_hash(password)
+
+        existing_user = supabase.table("users").select("username").eq("username", username).execute()
+        if existing_user.data:
+            flash("Username already exists!", "error")
+            return redirect(url_for("register"))
+
+        supabase.table("users").insert({
+            "full_name": full_name, "username": username, "email": email, "password": hashed_password
+        }).execute()
+
+        flash("Registration successful! Please login.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+# ✅ Login User
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        response = supabase.table("users").select("*").eq("username", username).execute()
+        user = response.data
+
+        if not user:
+            flash("Invalid username or password!", "error")
+            return redirect(url_for("login"))
+
+        user = user[0]
+        if check_password_hash(user["password"], password):
+            session["logged_in"] = True
+            session["username"] = username
+            flash("Login successful!", "success")
+            return redirect(url_for("main"))
+        else:
+            flash("Invalid username or password!", "error")
+            return redirect(url_for("login"))
+
+    return render_template("login.html")
+
+# ✅ Logout
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out successfully.", "info")
+    return redirect(url_for("home"))
+
+# ✅ Home Page
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+# ✅ Main Page (After Login)
+@app.route("/main")
+def main():
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("login"))
+    return render_template("main.html")
+
+# ✅ Choose Recipe
+@app.route("/choose_recipe")
+def choose_recipe():
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+    return render_template("choose_recipe.html", recipes=recipes)
+
+# ✅ Update Ingredients
+@app.route("/update_ingredients", methods=["GET", "POST"])
+def update_ingredients():
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+    if request.method == "POST":
+        for ingredient in ingredients:
+            ingredients[ingredient] = int(request.form.get(ingredient, 0))
+        flash("Ingredients updated!", "success")
+        return redirect(url_for("choose_recipe"))
+    return render_template("update_ingredients.html", ingredients=ingredients)
+
+# ✅ Food Info
+@app.route("/food_info")
+def food_info():
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+    return render_template("food_info.html")
+
+# ✅ Recipe Status
+@app.route("/recipe_status")
+def recipe_status():
+    if not session.get("logged_in"):
+        flash("Please login first.", "error")
+        return redirect(url_for("home"))
+
+    # Sort scheduled recipes by start time
+    sorted_schedules = []
+    for recipe_key, schedule_info in scheduled_recipes.items():
+        # Get the recipe name, either from schedule_info or from the key
+        recipe_name = schedule_info.get('recipe_name', '')
+        if not recipe_name and '_' in recipe_key:
+            recipe_name = recipe_key.split('_')[0]
+        
+        # Only add to sorted list if it's a valid recipe
+        if recipe_name in recipes:
+            sorted_schedules.append({
+                'key': recipe_key,
+                'recipe_name': recipe_name,
+                'start_time': schedule_info['start_time'],
+                'cooking_time': recipes[recipe_name]['cooking_time']
+            })
+    
+    # Sort by start time
+    sorted_schedules.sort(key=lambda x: datetime.strptime(x['start_time'], "%Y-%m-%dT%H:%M"))
+
+    # Filter ongoing recipes to only include valid ones
+    valid_ongoing = {
+        recipe: info for recipe, info in ongoing_recipes.items() 
+        if recipe in recipes
+    }
+
+    return render_template("recipe_status.html", 
+                         scheduled_recipes=sorted_schedules,
+                         ongoing_recipes=valid_ongoing,
+                         recipes=recipes)
+
+# ✅ Profile Page
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
     if not session.get("logged_in"):
-        flash("Please login to access this page", "error")
+        flash("Please login first.", "error")
         return redirect(url_for("home"))
 
     username = session.get("username")
-    user = users.get(username, {})  # Ensure user exists, or use empty dict
+    response = supabase.table("users").select("*").eq("username", username).execute()
+    user = response.data[0] if response.data else {}
 
     if request.method == "POST":
-        # ✅ Use `.get()` to prevent KeyError if the key doesn't exist
-        user["name"] = request.form.get("name", user.get("name", ""))
-        user["email"] = request.form.get("email", user.get("email", ""))
-        user["phone"] = request.form.get("phone", user.get("phone", ""))  # ✅ Fix KeyError here
-        user["address"] = request.form.get("address", user.get("address", ""))
-        user["diet_type"] = request.form.get("diet_type", user.get("diet_type", "Vegetarian"))
-        user["allergies"] = request.form.get("allergies", user.get("allergies", ""))
-        user["preferred_cuisines"] = request.form.get("preferred_cuisines", user.get("preferred_cuisines", ""))
-        user["disliked_ingredients"] = request.form.get("disliked_ingredients", user.get("disliked_ingredients", ""))
-        user["spice_level"] = request.form.get("spice_level", user.get("spice_level", "Medium"))
-        user["cooking_time_preference"] = request.form.get("cooking_time_preference", user.get("cooking_time_preference", "Quick Meals"))
-        user["favorite_ingredients"] = request.form.get("favorite_ingredients", user.get("favorite_ingredients", ""))
-        user["auto_suggestions"] = request.form.get("auto_suggestions") == "on"  # ✅ Convert checkbox to boolean
-        user["connected_machine"] = request.form.get("connected_machine", user.get("connected_machine", ""))
-        user["ingredient_availability"] = request.form.get("ingredient_availability", user.get("ingredient_availability", ""))
-        user["preferred_cooking_mode"] = request.form.get("preferred_cooking_mode", user.get("preferred_cooking_mode", "Manual"))
-        user["caloric_intake_goal"] = request.form.get("caloric_intake_goal", user.get("caloric_intake_goal", ""))
-        user["health_goals"] = request.form.get("health_goals", user.get("health_goals", ""))
-        user["language_preference"] = request.form.get("language_preference", user.get("language_preference", "English"))
-        user["notification_preferences"] = request.form.get("notification_preferences", user.get("notification_preferences", ""))
-        user["subscription_status"] = request.form.get("subscription_status", user.get("subscription_status", ""))
-        user["voice_assistant_integration"] = request.form.get("voice_assistant_integration") == "on"
-        user["recipe_sharing_preferences"] = request.form.get("recipe_sharing_preferences", user.get("recipe_sharing_preferences", ""))
-        user["family_mode"] = request.form.get("family_mode") == "on"
-
-        # ✅ Update user in the users dictionary
-        users[username] = user
-
-        flash("Profile updated successfully!", "success")
+        update_data = {
+            "full_name": request.form.get("name", user.get("full_name", "")),
+            "email": request.form.get("email", user.get("email", ""))
+        }
+        supabase.table("users").update(update_data).eq("username", username).execute()
+        flash("Profile updated!", "success")
         return redirect(url_for("profile"))
 
     return render_template("profile.html", user=user)
 
+@app.context_processor
+def inject_ongoing_recipes():
+    return dict(ongoing_recipes=ongoing_recipes)
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("home"))
-
+# ✅ Run the Flask App
 if __name__ == "__main__":
     app.run(debug=True)

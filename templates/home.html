@@ -1,120 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | Automatic Cooking Machine</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <style>
-        /* Google Font */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+{% extends "base.html" %}
 
-        /* Background Animation with Gradient */
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #3E1E68, #8E54E9, #4776E6);
-            background-size: 300% 300%;
-            animation: gradientBG 10s infinite alternate ease-in-out;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-            color: #fff;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        /* Background Gradient Animation */
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-        }
-
-        /* Glassmorphism Container */
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 15px;
-            backdrop-filter: blur(15px);
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease-in-out;
-            width: 90%;
-            max-width: 500px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .container:hover {
-            transform: scale(1.03);
-        }
-
-        /* Heading */
-        h1 {
-            font-size: 2.2em;
-            font-weight: 600;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        /* Animated Buttons */
-        .btn {
-            display: inline-block;
-            margin: 15px 10px;
-            padding: 12px 24px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #fff;
-            background: linear-gradient(45deg, #6A11CB, #2575FC);
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0px 5px 15px rgba(106, 17, 203, 0.4);
-        }
-
-        .btn:hover {
-            background: linear-gradient(45deg, #8E54E9, #4776E6);
-            transform: translateY(-5px);
-            box-shadow: 0px 10px 25px rgba(106, 17, 203, 0.6);
-        }
-
-        /* Smooth fade-in animation */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(-20px);
-            animation: fadeIn 1s ease-in-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .btn {
-                font-size: 1em;
-                padding: 10px 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container fade-in">
-        <h1>Welcome to the Automatic Cooking Machine</h1>
-        <a href="{{ url_for('login') }}"><button class="btn">Login</button></a>
-        <a href="{{ url_for('register') }}"><button class="btn">Register</button></a>
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <span class="material-icons hero-icon">restaurant_menu</span>
+        <h1>Welcome to VeCook</h1>
+        <p class="hero-subtitle">Your Smart Cooking Assistant</p>
+        <div class="hero-buttons">
+            {% if not session.get('logged_in') %}
+                <a href="{{ url_for('login') }}" class="button">
+                    <span class="material-icons">login</span>
+                    Get Started
+                </a>
+                <a href="{{ url_for('register') }}" class="button secondary">
+                    <span class="material-icons">person_add</span>
+                    Create Account
+                </a>
+            {% else %}
+                <a href="{{ url_for('main') }}" class="button">
+                    <span class="material-icons">dashboard</span>
+                    Go to Dashboard
+                </a>
+            {% endif %}
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<div class="features-section">
+    <h2>Smart Features</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <span class="material-icons">schedule</span>
+            <h3>Smart Scheduling</h3>
+            <p>Plan your cooking sessions with intelligent timing suggestions</p>
+        </div>
+        <div class="feature-card">
+            <span class="material-icons">timer</span>
+            <h3>Real-time Tracking</h3>
+            <p>Monitor cooking progress with precise timing</p>
+        </div>
+        <div class="feature-card">
+            <span class="material-icons">restaurant</span>
+            <h3>Recipe Management</h3>
+            <p>Organize and manage your favorite recipes</p>
+        </div>
+        <div class="feature-card">
+            <span class="material-icons">notifications</span>
+            <h3>Smart Alerts</h3>
+            <p>Get notified when your cooking needs attention</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-section {
+    text-align: center;
+    padding: 80px 20px;
+    margin: -20px -20px 0;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-icon {
+    font-size: 64px;
+    color: var(--accent-primary);
+    margin-bottom: 24px;
+}
+
+.hero-section h1 {
+    font-size: 48px;
+    margin: 0 0 16px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 24px;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.button.secondary {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.features-section {
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.features-section h2 {
+    font-size: 36px;
+    margin-bottom: 48px;
+    color: var(--text-primary);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-glow);
+}
+
+.feature-card .material-icons {
+    font-size: 48px;
+    color: var(--accent-primary);
+    margin-bottom: 16px;
+}
+
+.feature-card h3 {
+    font-size: 24px;
+    margin: 0 0 16px;
+    color: var(--text-primary);
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 60px 20px;
+    }
+
+    .hero-section h1 {
+        font-size: 36px;
+    }
+
+    .hero-subtitle {
+        font-size: 20px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+    }
+
+    .features-section {
+        padding: 60px 20px;
+    }
+
+    .feature-card {
+        padding: 24px;
+    }
+}
+</style>
+{% endblock %}

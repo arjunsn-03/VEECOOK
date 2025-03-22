@@ -5,8 +5,9 @@
 {% block content %}
     <h1>Edit Schedule: {{ recipe_name }}</h1>
     <form method="POST">
-        <label for="new_time">Enter the new time to start cooking (e.g., 14:30 for 2:30 PM):</label>
+        <label for="new_time">New Start Time (e.g., 14:30 for 2:30 PM):</label>
         <input type="text" id="new_time" name="new_time" required>
         <button type="submit">Update Schedule</button>
     </form>
+    <a href="{{ url_for('cooking_status', recipe=recipe_name) }}"><button>Go Back</button></a>
 {% endblock %}
