@@ -42,12 +42,10 @@
                     </div>
                     {% endif %}
                 </div>
-                <form action="{{ url_for('start_cooking', recipe=recipe_name) }}" method="post">
-                    <button type="submit" name="confirmation" value="yes" class="button primary-button">
-                        <span class="material-icons">restaurant</span>
-                        Start Cooking
-                    </button>
-                </form>
+                <a href="{{ url_for('start_cooking', recipe=recipe_name) }}" class="button primary-button">
+                    <span class="material-icons">restaurant</span>
+                    Start Cooking
+                </a>
             </div>
         </div>
         {% endfor %}

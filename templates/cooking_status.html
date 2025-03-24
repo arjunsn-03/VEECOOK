@@ -3,51 +3,283 @@
 {% block title %}Cooking Status: {{ recipe_name }}{% endblock %}
 
 {% block content %}
-    <h1>Cooking Status: {{ recipe_name }}</h1>
-    <div style="text-align: center;">
-        <img src="{{ url_for('static', filename='images/' + recipe_name + '.jpg') }}" alt="{{ recipe_name }}" style="width: 300px; height: auto;">
-        
-        {% if start_time == "now" %}
-            <p>Cooking has started. Time remaining: <span id="timeRemaining">{{ recipe['cooking_time'] }}:00</span></p>
-        {% else %}
-            <p>Cooking is scheduled to start at: {{ start_time }}</p>
-        {% endif %}
-        
-        <button onclick="abortCooking()">Abort Cooking</button>
-        <a href="{{ url_for('main') }}"><button>Go Back to Main Page</button></a>
-        
-        {% if start_time != "now" %}
-            <a href="{{ url_for('edit_schedule', recipe=recipe_name|safe) }}"><button>Edit Start Time</button></a>
-        {% endif %}
+<div class="cooking-status-container">
+    <div class="cooking-status-card">
+        <div class="recipe-header">
+            <img src="{{ url_for('static', filename='images/' + recipe_name + '.jpg') }}" alt="{{ recipe_name }}" class="recipe-image">
+            <div class="recipe-info">
+                <h2>{{ recipe_name }}</h2>
+                <div class="cooking-time">
+                    <span class="material-icons">timer</span>
+                    <span>{{ recipe['cooking_time'] }} minutes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-section">
+            <div class="timer-section">
+                <h3>Cooking Status</h3>
+                <div class="timer-display">
+                    <span class="material-icons">timer</span>
+                    <span id="remaining-time">Calculating...</span>
+                </div>
+            </div>
+
+            <div class="arduino-messages">
+                <div class="messages-header">
+                    <h3>Arduino Updates</h3>
+                    <button onclick="clearMessages()" class="button secondary">
+                        <span class="material-icons">clear_all</span>
+                        Clear
+                    </button>
+                </div>
+                <div class="messages-container" id="messages-container">
+                    {% for message in arduino_messages %}
+                    <div class="message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="recipe-details">
+            <h3>Recipe Details</h3>
+            <div class="ingredients-list">
+                <h4>Ingredients:</h4>
+                <ul>
+                    {% for ingredient, amount in recipe['ingredients'].items() %}
+                    <li>{{ ingredient }}: {{ amount }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="steps-list">
+                <h4>Steps:</h4>
+                <ol>
+                    {% for step in recipe['steps'] %}
+                    <li>Add {{ step['ingredient'] }} after {{ step['time'] }} minutes</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let startNow = "{{ start_time }}" === "now"; // Convert Jinja to JavaScript boolean
-            let timeRemaining = parseInt("{{ recipe['cooking_time'] }}") * 60; // Convert to integer
+<style>
+.cooking-status-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 200px);
+    padding: 20px;
+}
 
-            function updateTimer() {
-                if (timeRemaining > 0) {
-                    timeRemaining--;  
-                    let minutes = Math.floor(timeRemaining / 60);
-                    let seconds = timeRemaining % 60;
-                    document.getElementById("timeRemaining").innerText = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-                    setTimeout(updateTimer, 1000);  // Update every second
-                } else {
-                    document.getElementById("timeRemaining").innerText = "Cooking Completed!";
-                }
-            }
+.cooking-status-card {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-            // Start timer only if cooking starts now
-            if (startNow) {
-                updateTimer();
+.recipe-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.recipe-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.recipe-info h2 {
+    margin: 0 0 8px;
+    color: var(--text-primary);
+}
+
+.cooking-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+}
+
+.status-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.timer-section {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.timer-section h3 {
+    margin: 0 0 16px;
+    color: var(--text-primary);
+}
+
+.timer-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 24px;
+    color: var(--accent-primary);
+}
+
+.arduino-messages {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.messages-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.messages-container {
+    height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.message {
+    padding: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.message:last-child {
+    border-bottom: none;
+}
+
+.recipe-details {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.recipe-details h3 {
+    margin: 0 0 16px;
+    color: var(--text-primary);
+}
+
+.ingredients-list, .steps-list {
+    margin-bottom: 16px;
+}
+
+.ingredients-list h4, .steps-list h4 {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+}
+
+.ingredients-list ul, .steps-list ol {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-secondary);
+}
+
+.ingredients-list li, .steps-list li {
+    margin-bottom: 4px;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.button.secondary {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.button:hover {
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .status-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .recipe-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .recipe-image {
+        width: 100%;
+        height: 200px;
+    }
+}
+</style>
+
+<script>
+function updateTimer() {
+    fetch(`/get_remaining_time/{{ recipe_name }}`)
+        .then(response => response.json())
+        .then(data => {
+            const remainingTime = data.remaining_time;
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            document.getElementById('remaining-time').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update Arduino messages
+            if (data.arduino_messages && data.arduino_messages.length > 0) {
+                const container = document.getElementById('messages-container');
+                data.arduino_messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    messageDiv.textContent = message;
+                    container.appendChild(messageDiv);
+                    container.scrollTop = container.scrollHeight;
+                });
             }
         });
+}
 
-        function abortCooking() {
-            if (confirm("Are you sure you want to abort cooking?")) {
-                window.location.href = "{{ url_for('abort_cooking', recipe=recipe_name) }}";
+function clearMessages() {
+    fetch('/clear_messages', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('messages-container').innerHTML = '';
             }
-        }
-    </script>
+        });
+}
+
+// Update timer every second
+setInterval(updateTimer, 1000);
+updateTimer(); // Initial update
+</script>
 {% endblock %}

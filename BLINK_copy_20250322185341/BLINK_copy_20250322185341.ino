@@ -1,94 +1,47 @@
 #include <Servo.h>
 
-// Servo Setup (Carrot, Green Peas, Corn Flour, Salt, Pepper)
 Servo servos[5];  
-const int servoPins[5] = {3,4 , 6, 9, 10};  
-
-// Stepper Motor Setup (Water, Stirring)
-const int waterStep = 7, waterDir = 13;
-const int stirStep = 8, stirDir = 2;
-
-const int stepDelay = 500;  // Adjust speed
-
-// Recipe Structure
-struct Ingredient {
-    String name;
-    int servoIndex;  
-    unsigned long dispenseTime;
-};
-
-// Updated Veg Soup Recipe
-Ingredient recipe[] = {
-    {"Water", -1, 5000},       // Step 1: Dispense Water
-    {"Carrot", 0, 10000},      // Step 2: Add Carrot
-    {"Green Peas", 1, 15000},  // Step 3: Add Green Peas
-    {"Corn Flour", 2, 20000},  // Step 4: Add Corn Flour
-    {"Salt", 3, 25000},        // Step 5: Add Salt
-    {"Pepper", 4, 30000},      // Step 6: Add Pepper
-    {"Stir", -2, 35000}        // Step 7: Stir the Soup
-};
-
-const int recipeSize = sizeof(recipe) / sizeof(recipe[0]);
-
-unsigned long startTime;
-int currentStep = 0;
+const int servoPins[5] = {3, 4, 6, 9, 10};
 
 void setup() {
     Serial.begin(9600);
+    Serial.println("Starting...");
     
-    // Attach Servos
+    // Initialize servos
     for (int i = 0; i < 5; i++) {
-        servos[i].attach(servoPins[i]);
-        servos[i].write(0);
+        if (servos[i].attach(servoPins[i])) {
+            Serial.println("Servo " + String(i + 1) + " ready");
+            servos[i].write(0);
+        } else {
+            Serial.println("Failed to attach servo " + String(i + 1));
+        }
     }
-
-    // Stepper Pins as Output
-    pinMode(waterStep, OUTPUT);
-    pinMode(waterDir, OUTPUT);
-    pinMode(stirStep, OUTPUT);
-    pinMode(stirDir, OUTPUT);
-
-    Serial.println("Veg Soup Maker Ready...");
-    startTime = millis();
+    Serial.println("Ready for commands");
 }
 
-// Function to Run Stepper Motors
-void runStepper(int stepPin, int dirPin, int steps, bool direction) {
-    digitalWrite(dirPin, direction);
-    for (int i = 0; i < steps; i++) {
-        digitalWrite(stepPin, HIGH);
-        delayMicroseconds(stepDelay);
-        digitalWrite(stepPin, LOW);
-        delayMicroseconds(stepDelay);
-    }
-}
-
-// Dispense Ingredient
-void dispenseIngredient(int index) {
-    Serial.print("Dispensing: ");
-    Serial.println(recipe[currentStep].name);
-
-    if (index >= 0 && index < 5) {  // Ensure valid servo index
-        servos[index].write(100);
-        delay(1000);
-        servos[index].write(0);
-    } else if (index == -1) {
-        Serial.println("Pumping Water...");
-        runStepper(waterStep, waterDir, 800, true);  
-    } else if (index == -2) {
-        Serial.println("Stirring Soup...");
-        runStepper(stirStep, stirDir, 800, true);  
-    }
-
-    Serial.println("Step Complete.\n");
-}
-
-// Main Loop
 void loop() {
-    unsigned long elapsedTime = millis() - startTime;
-
-    if (currentStep < recipeSize && elapsedTime >= recipe[currentStep].dispenseTime) {
-        dispenseIngredient(recipe[currentStep].servoIndex);
-        currentStep++;
+    if (Serial.available() > 0) {
+        String command = Serial.readStringUntil('\n');
+        command.trim();
+        
+        Serial.println("Received: " + command);  // Echo back what we received
+        
+        if (command.startsWith("SERVO:")) {
+            int firstColon = command.indexOf(':');
+            int secondColon = command.indexOf(':', firstColon + 1);
+            
+            if (secondColon != -1) {
+                int servoNum = command.substring(firstColon + 1, secondColon).toInt();
+                int angle = command.substring(secondColon + 1).toInt();
+                
+                Serial.println("Moving servo " + String(servoNum) + " to " + String(angle));
+                
+                if (servoNum >= 1 && servoNum <= 5 && angle >= 0 && angle <= 180) {
+                    servos[servoNum - 1].write(angle);
+                    delay(1000);
+                    Serial.println("Movement complete");
+                }
+            }
+        }
     }
 }

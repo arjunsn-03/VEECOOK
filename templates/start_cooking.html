@@ -21,14 +21,7 @@
                     <li>{{ ingredient }}: {{ quantity }}</li>
                 {% endfor %}
             </ul>
-            <li>Load the ingredients into the following containers:</li>
-            <ul>
-                <li>Container 1: Carrot</li>
-                <li>Container 2: Green Peas</li>
-                <li>Container 3: Corn Flour</li>
-                <li>Container 4: Water</li>
-                <li>Container 5: Oil</li>
-            </ul>
+            <li>Load the ingredient into the dispenser connected to GPIO 12</li>
         </ol>
 
         <form method="POST" action="{{ url_for('start_cooking', recipe=recipe_name) }}" onsubmit="return handleConfirmation()">

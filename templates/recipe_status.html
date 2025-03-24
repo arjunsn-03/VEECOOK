@@ -87,6 +87,39 @@
             </div>
         {% endif %}
     </div>
+
+    <div class="status-section">
+        <h2>
+            <span class="material-icons">check_circle</span>
+            Completed Recipes
+        </h2>
+        {% if completed_recipes %}
+            {% for recipe in completed_recipes %}
+            <div class="recipe-card">
+                <h3>{{ recipe.recipe_name }}</h3>
+                <div class="recipe-info">
+                    <p>
+                        <span class="material-icons">schedule</span>
+                        Started at: {{ recipe.start_time.strftime('%Y-%m-%d %H:%M') }}
+                    </p>
+                    <p>
+                        <span class="material-icons">done_all</span>
+                        Completed at: {{ recipe.completion_time.strftime('%Y-%m-%d %H:%M') }}
+                    </p>
+                    <p>
+                        <span class="material-icons">timer</span>
+                        Cooking Time: {{ recipe.cooking_time }} minutes
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span class="material-icons">assignment_turned_in</span>
+                <p>No completed recipes</p>
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <style>
