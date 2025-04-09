@@ -9,6 +9,10 @@ class RaspberryPiCommunicator:
 
     def send_recipe_start(self, recipe_name, recipe_data):
         try:
+            # Add validation for recipe_data
+            if not recipe_data or "steps" not in recipe_data:
+                return False, "Invalid recipe data"
+            
             self.logger.info(f"Sending recipe data: {recipe_data}")
             response = requests.post(
                 f"{self.pi_base_url}/start_recipe",

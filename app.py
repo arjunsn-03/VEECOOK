@@ -23,7 +23,7 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Initialize Raspberry Pi Communicator
-RASPBERRY_PI_IP = os.getenv('RASPBERRY_PI_IP', '192.168.240.77')  # Make sure this IP is correct
+RASPBERRY_PI_IP = os.getenv('RASPBERRY_PI_IP', '192.168.185.77')  # Make sure this IP is correct
 pi_communicator = RaspberryPiCommunicator(RASPBERRY_PI_IP, port=5001)  # Updated port to 5001
 
 app = Flask(__name__)
@@ -38,84 +38,56 @@ SERVO_PINS = {
     "salt_pepper": 24  # GPIO 24 - Fifth servo
 }
 
-# Updated ingredients dictionary
-ingredients = {
-    "water": {"amount": 500, "unit": "ml"},
-    "carrot": {"amount": 100, "unit": "g"},
-    "peas": {"amount": 50, "unit": "g"},
-    "spices": {"amount": 10, "unit": "g"},
-    "salt_pepper": {"amount": 5, "unit": "g"},
-    "chilly": {"amount": 30, "unit": "g"},
-    "pepper": {"amount": 20, "unit": "g"},
-    "corn_flour": {"amount": 50, "unit": "g"}
-}
-
-# Updated recipes
+# Define recipes with only veg_soup and spicy_soup
 recipes = {
-    "veg_soup": {
-        "name": "Vegetable Soup",
-        "description": "A healthy vegetable soup",
-        "cooking_time": 30,  # 30 seconds total
-        "calories": 200,
-        "veg": True,
-        "ingredients": {
-            "water": "500ml",
-            "carrot": "100g",
-            "peas": "50g",
-            "spices": "10g",
-            "salt_pepper": "5g"
+    'veg_soup': {
+        'description': 'A healthy vegetable soup with mixed vegetables and aromatic spices',
+        'cooking_time': 40,  # seconds
+        'calories': 120,
+        'veg': True,
+        'ingredients': {
+            'water': {'amount': 500, 'unit': 'ml', 'min_required': 500},
+            'oil': {'amount': 30, 'unit': 'ml', 'min_required': 30},
+            'onion': {'amount': 100, 'unit': 'g', 'min_required': 100},
+            'carrot': {'amount': 100, 'unit': 'g', 'min_required': 100},
+            'peas': {'amount': 50, 'unit': 'g', 'min_required': 50},
+            'spices': {'amount': 10, 'unit': 'g', 'min_required': 10},
+            'salt_and_pepper': {'amount': 5, 'unit': 'g', 'min_required': 5}
         },
-        "steps": [
-            {
-                "ingredient": "water",
-                "time": 5,      # 5 seconds after start
-                "servo": 12,    # GPIO 12
-                "amount": 90
-            },
-            {
-                "ingredient": "carrot",
-                "time": 10,     # 10 seconds after start
-                "servo": 13,    # GPIO 13
-                "amount": 90
-            },
-            {
-                "ingredient": "peas",
-                "time": 15,     # 15 seconds after start
-                "servo": 18,    # GPIO 18
-                "amount": 90
-            },
-            {
-                "ingredient": "spices",
-                "time": 20,     # 20 seconds after start
-                "servo": 23,    # GPIO 23
-                "amount": 90
-            },
-            {
-                "ingredient": "salt_pepper",
-                "time": 25,     # 25 seconds after start
-                "servo": 24,    # GPIO 24
-                "amount": 90
-            }
+        'steps': [
+            {'time': 5, 'ingredient': 'onion', 'servo': 1, 'amount': 90},
+            {'time': 10, 'ingredient': 'carrot', 'servo': 2, 'amount': 90},
+            {'time': 15, 'ingredient': 'peas', 'servo': 3, 'amount': 90},
+            {'time': 20, 'ingredient': 'spices', 'servo': 4, 'amount': 90},
+            {'time': 25, 'ingredient': 'salt_and_pepper', 'servo': 5, 'amount': 90}
         ]
     },
-    "spicy_soup": {
-        "name": "Spicy Soup",
-        "description": "A spicy soup with chilly",
-        "cooking_time": 10,
-        "calories": 150,
-        "veg": True,
-        "ingredients": {
-            "chilly": "30g"
+    'spicy_soup': {
+        'description': 'A spicy soup with aromatic chilly',
+        'cooking_time': 25,  # seconds
+        'calories': 90,
+        'veg': True,
+        'ingredients': {
+            'water': {'amount': 400, 'unit': 'ml', 'min_required': 400},
+            'oil': {'amount': 25, 'unit': 'ml', 'min_required': 25},
+            'chilly': {'amount': 20, 'unit': 'g', 'min_required': 20}
         },
-        "steps": [
-            {
-                "ingredient": "chilly",
-                "time": 10,    # 10 seconds after start
-                "servo": 12,   # GPIO 12
-                "amount": 90   # Changed from 180 to 90 degrees
-            }
+        'steps': [
+            {'time': 5, 'ingredient': 'chilly', 'servo': 1, 'amount': 90}
         ]
     }
+}
+
+# Define ingredients with only those needed for veg and spicy soups
+ingredients = {
+    'water': {'amount': 1000, 'unit': 'ml', 'min_required': 500},
+    'oil': {'amount': 500, 'unit': 'ml', 'min_required': 200},
+    'onion': {'amount': 500, 'unit': 'g', 'min_required': 100},
+    'carrot': {'amount': 500, 'unit': 'g', 'min_required': 100},
+    'peas': {'amount': 300, 'unit': 'g', 'min_required': 50},
+    'spices': {'amount': 100, 'unit': 'g', 'min_required': 10},
+    'salt_and_pepper': {'amount': 50, 'unit': 'g', 'min_required': 5},
+    'chilly': {'amount': 100, 'unit': 'g', 'min_required': 20}
 }
 
 scheduled_recipes = {}
@@ -155,11 +127,16 @@ def check_recipe_completion():
     completed = []
     
     for recipe, info in ongoing_recipes.items():
+        if recipe not in recipes:
+            # Invalid recipe, remove it
+            completed.append(recipe)
+            continue
+            
         start_time = info["start_time"]
-        cooking_time = info["cooking_time"]
+        cooking_time = recipes[recipe]["cooking_time"]
         
         # Calculate if recipe is complete
-        elapsed_time = (current_time - start_time).total_seconds() / 60  # Convert to minutes
+        elapsed_time = (current_time - start_time).total_seconds()
         if elapsed_time >= cooking_time:
             completed.append(recipe)
             
@@ -171,6 +148,7 @@ def check_recipe_completion():
             "completion_time": current_time,
             "cooking_time": recipe_info["cooking_time"]
         }
+        logger.info(f"Recipe {recipe} completed and moved to completed_recipes")
 
 @app.route("/edit_schedule/<recipe>", methods=["GET", "POST"])
 def edit_schedule(recipe):
@@ -354,9 +332,18 @@ def cooking_status(recipe):
 def get_remaining_time(recipe):
     if recipe in ongoing_recipes:
         start_time = ongoing_recipes[recipe]["start_time"]
-        cooking_time = ongoing_recipes[recipe]["cooking_time"]
+        cooking_time = recipes[recipe]["cooking_time"]  # This is now in seconds
         elapsed_time = (datetime.now() - start_time).total_seconds()
-        remaining_time = max(cooking_time * 60 - elapsed_time, 0)
+        remaining_time = max(cooking_time - elapsed_time, 0)
+        
+        # Automatically move completed recipe to completed_recipes
+        if remaining_time <= 0:
+            recipe_info = ongoing_recipes.pop(recipe)
+            completed_recipes[recipe] = {
+                "start_time": recipe_info["start_time"],
+                "completion_time": datetime.now(),
+                "cooking_time": recipe_info["cooking_time"]
+            }
         
         # Get latest Arduino messages
         success, response = pi_communicator.get_status()
@@ -364,11 +351,34 @@ def get_remaining_time(recipe):
         if success and isinstance(response, dict):
             arduino_messages = response.get("arduino_messages", [])
             
+        # Add status message based on time
+        if remaining_time > 0:
+            if elapsed_time <= 5:
+                arduino_messages.append("Water pump active")
+            elif 10 <= elapsed_time <= 15:
+                arduino_messages.append("Oil pump active")
+            
         return jsonify({
             "remaining_time": int(remaining_time),
-            "arduino_messages": arduino_messages
+            "arduino_messages": arduino_messages,
+            "current_step": get_current_step(elapsed_time, recipe),
+            "is_completed": remaining_time <= 0
         })
-    return jsonify({"remaining_time": 0, "arduino_messages": []})
+    return jsonify({"remaining_time": 0, "arduino_messages": [], "is_completed": True})
+
+def get_current_step(elapsed_time, recipe):
+    """Helper function to determine current step based on elapsed time"""
+    if elapsed_time <= 5:
+        return "Dispensing water"
+    elif 10 <= elapsed_time <= 15:
+        return "Dispensing oil"
+    
+    # Check other steps
+    for step in recipes[recipe]["steps"]:
+        if abs(elapsed_time - step["time"]) < 2:  # Within 2 seconds of the step
+            return f"Adding {step['ingredient']}"
+    
+    return "In progress"
 
 # Register User
 @app.route("/register", methods=["GET", "POST"])
@@ -443,31 +453,38 @@ def main():
 # Choose Recipe
 @app.route("/choose_recipe")
 def choose_recipe():
-    if not session.get("logged_in"):
-        flash("Please login first.", "error")
-        return redirect(url_for("home"))
-    return render_template("choose_recipe.html", recipes=recipes)
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    
+    # Check ingredients availability for each recipe
+    available_recipes = {}
+    for recipe_name, recipe in recipes.items():
+        if check_recipe_ingredients(recipe):
+            available_recipes[recipe_name] = recipe
+    
+    return render_template('choose_recipe.html', recipes=available_recipes)
 
-# Update Ingredients
+def check_recipe_ingredients(recipe):
+    for ingredient, data in recipe['ingredients'].items():
+        if ingredients[ingredient]['amount'] < data['amount']:
+            return False
+    return True
+
 @app.route("/update_ingredients", methods=["GET", "POST"])
 def update_ingredients():
-    if not session.get("logged_in"):
-        flash("Please login first.", "error")
-        return redirect(url_for("home"))
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
         
     if request.method == "POST":
-        for ingredient in ingredients:
-            try:
-                new_amount = int(request.form.get(ingredient, 0))
-                ingredients[ingredient]["amount"] = new_amount
-            except ValueError:
-                flash(f"Invalid value for {ingredient}. Please enter a number.", "error")
-                return redirect(url_for("update_ingredients"))
-                
-        flash("Ingredients updated successfully!", "success")
-        return redirect(url_for("choose_recipe"))
-        
-    return render_template("update_ingredients.html", ingredients=ingredients)
+        # Update ingredient amounts
+        for ingredient in ingredients.keys():
+            amount = request.form.get(ingredient, type=float)
+            if amount is not None:
+                ingredients[ingredient]['amount'] = amount
+        flash('Ingredients updated successfully!', 'success')
+        return redirect(url_for('choose_recipe'))
+    
+    return render_template('update_ingredients.html', ingredients=ingredients)
 
 # Food Info
 @app.route("/food_info")

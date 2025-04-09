@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VeCook - Smart Cooking Assistant</title>
+    <title>Veecook - Smart Cooking Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Add Material Icons -->
@@ -13,7 +13,7 @@
     <nav class="nav">
         <div class="container">
             <div class="nav-content">
-                <a href="{{ url_for('home') }}" class="nav-logo">VeCook</a>
+                <a href="{{ url_for('home') }}" class="nav-logo">Veecook</a>
                 <div class="nav-links">
                     {% if session.get('logged_in') %}
                         <a href="{{ url_for('main') }}">

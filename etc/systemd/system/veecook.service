@@ -1,0 +1,12 @@
+[Unit]
+Description=Veecook Robot Server
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/veecook
+ExecStart=/usr/bin/python3 pi_server.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target 

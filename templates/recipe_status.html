@@ -20,7 +20,7 @@
                     </p>
                     <p>
                         <span class="material-icons">timer</span>
-                        Cooking Time: {{ recipe_info.cooking_time }} minutes
+                        Cooking Time: {{ recipe_info.cooking_time }} seconds
                     </p>
                     <div class="remaining-time">
                         <span class="material-icons">hourglass_bottom</span>
@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div class="recipe-actions">
-                    <form action="{{ url_for('abort_cooking', recipe=recipe_name) }}" method="post">
+                    <form method="POST" action="{{ url_for('abort_cooking', recipe=recipe_name) }}">
                         <button type="submit" class="abort-button">
                             <span class="material-icons">cancel</span>
                             Abort Cooking
@@ -61,7 +61,7 @@
                     </p>
                     <p>
                         <span class="material-icons">timer</span>
-                        Cooking Time: {{ schedule.cooking_time }} minutes
+                        Cooking Time: {{ schedule.cooking_time }} seconds
                     </p>
                 </div>
                 <div class="recipe-actions">
@@ -108,7 +108,7 @@
                     </p>
                     <p>
                         <span class="material-icons">timer</span>
-                        Cooking Time: {{ recipe.cooking_time }} minutes
+                        Cooking Time: {{ recipe.cooking_time }} seconds
                     </p>
                 </div>
             </div>
@@ -182,14 +182,15 @@ function updateRemainingTime() {
             .then(response => response.json())
             .then(data => {
                 const remainingSeconds = data.remaining_time;
-                const minutes = Math.floor(remainingSeconds / 60);
-                const seconds = remainingSeconds % 60;
                 const element = document.getElementById('remaining-time-{{ recipe_name }}');
                 if (remainingSeconds > 0) {
-                    element.textContent = `${minutes}m ${seconds}s remaining`;
+                    element.textContent = `${remainingSeconds}s remaining`;
                 } else {
                     element.textContent = "Cooking completed!";
                 }
+            })
+            .catch(error => {
+                console.error('Error fetching time:', error);
             });
     {% endfor %}
 }
@@ -198,5 +199,25 @@ function updateRemainingTime() {
 setInterval(updateRemainingTime, 1000);
 // Initial update
 updateRemainingTime();
+
+// Add this function to check and update recipe status
+function checkAndUpdateRecipeStatus() {
+    {% for recipe_name, recipe_info in ongoing_recipes.items() %}
+        fetch('/get_remaining_time/{{ recipe_name }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.remaining_time <= 0) {
+                    // Recipe is complete, refresh the page to update status
+                    window.location.reload();
+                }
+            });
+    {% endfor %}
+}
+
+// Call the check function every 5 seconds
+setInterval(checkAndUpdateRecipeStatus, 5000);
+
+// Initial check
+checkAndUpdateRecipeStatus();
 </script>
 {% endblock %}

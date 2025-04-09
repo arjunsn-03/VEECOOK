@@ -3,49 +3,274 @@
 {% block title %}Start Cooking: {{ recipe_name }}{% endblock %}
 
 {% block content %}
-    <div class="start-cooking-container">
-        <h1>Start Cooking: {{ recipe_name }}</h1>
+<div class="start-cooking-container">
+    <h1>Start Cooking: {{ recipe_name.replace('_', ' ').title() }}</h1>
 
+    {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <div class="recipe-section">
         <h2>Ingredients Required:</h2>
-        <ul>
-            {% for ingredient, quantity in recipe['ingredients'].items() %}
-                <li>{{ ingredient }}: {{ quantity }}</li>
-            {% endfor %}
-        </ul>
+        <div class="ingredients-list">
+            <div class="liquid-ingredients">
+                <h3>Liquids:</h3>
+                <ul>
+                    {% if recipe['ingredients'].get('water') %}
+                    <li>Water: {{ recipe['ingredients']['water']['amount'] }}{{ recipe['ingredients']['water']['unit'] }}</li>
+                    {% endif %}
+                    {% if recipe['ingredients'].get('oil') %}
+                    <li>Oil: {{ recipe['ingredients']['oil']['amount'] }}{{ recipe['ingredients']['oil']['unit'] }}</li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <div class="solid-ingredients">
+                <h3>Other Ingredients:</h3>
+                <ul>
+                    {% for ingredient, data in recipe['ingredients'].items() %}
+                        {% if ingredient not in ['water', 'oil'] %}
+                        <li>{{ ingredient.replace('_', ' ').title() }}: {{ data['amount'] }}{{ data['unit'] }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
 
-        <h2>Instructions:</h2>
-        <ol>
-            <li>Measure the following ingredients:</li>
-            <ul>
-                {% for ingredient, quantity in recipe['ingredients'].items() %}
-                    <li>{{ ingredient }}: {{ quantity }}</li>
-                {% endfor %}
-            </ul>
-            <li>Load the ingredient into the dispenser connected to GPIO 12</li>
-        </ol>
+        <div class="instructions-section">
+            <h2>Loading Instructions:</h2>
+            <div class="instruction-card">
+                <h3>Step 1: Load Liquid Ingredients</h3>
+                <ul>
+                    <li>Fill the water reservoir with {{ recipe['ingredients']['water']['amount'] }}{{ recipe['ingredients']['water']['unit'] }} of water</li>
+                    <li>Fill the oil container with {{ recipe['ingredients']['oil']['amount'] }}{{ recipe['ingredients']['oil']['unit'] }} of oil</li>
+                </ul>
+            </div>
+
+            <div class="instruction-card">
+                <h3>Step 2: Load Ingredients into Servo Chambers</h3>
+                <p class="instruction-note">Load the following ingredients into their designated chambers:</p>
+                <div class="chamber-instructions">
+                    {% if recipe_name == 'veg_soup' %}
+                        <div class="chamber">
+                            <span class="chamber-number">Chamber 1:</span>
+                            <span class="ingredient">Onion ({{ recipe['ingredients']['onion']['amount'] }}{{ recipe['ingredients']['onion']['unit'] }})</span>
+                        </div>
+                        <div class="chamber">
+                            <span class="chamber-number">Chamber 2:</span>
+                            <span class="ingredient">Carrot ({{ recipe['ingredients']['carrot']['amount'] }}{{ recipe['ingredients']['carrot']['unit'] }})</span>
+                        </div>
+                        <div class="chamber">
+                            <span class="chamber-number">Chamber 3:</span>
+                            <span class="ingredient">Peas ({{ recipe['ingredients']['peas']['amount'] }}{{ recipe['ingredients']['peas']['unit'] }})</span>
+                        </div>
+                        <div class="chamber">
+                            <span class="chamber-number">Chamber 4:</span>
+                            <span class="ingredient">Spices ({{ recipe['ingredients']['spices']['amount'] }}{{ recipe['ingredients']['spices']['unit'] }})</span>
+                        </div>
+                        <div class="chamber">
+                            <span class="chamber-number">Chamber 5:</span>
+                            <span class="ingredient">Salt & Pepper ({{ recipe['ingredients']['salt_and_pepper']['amount'] }}{{ recipe['ingredients']['salt_and_pepper']['unit'] }})</span>
+                        </div>
+                    {% elif recipe_name == 'spicy_soup' %}
+                        <div class="chamber">
+                            <span class="chamber-number">Chamber 1:</span>
+                            <span class="ingredient">Chilly ({{ recipe['ingredients']['chilly']['amount'] }}{{ recipe['ingredients']['chilly']['unit'] }})</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
         <form method="POST" action="{{ url_for('start_cooking', recipe=recipe_name) }}" onsubmit="return handleConfirmation()">
-            <label>Are all ingredients loaded correctly?</label>
-            <label>
-                <input type="radio" name="confirmation" value="yes" required> Yes
-            </label>
-            <label>
-                <input type="radio" name="confirmation" value="no" required> No
-            </label>
-            <br>
-            <p class="warning-message">Warning: Incorrect loading of ingredients can lead to incorrect food preparation.</p>
-            <button type="submit">Proceed to Schedule</button>
+            <div class="confirmation-section">
+                <h3>Confirmation</h3>
+                <p class="confirmation-question">Have you loaded all ingredients in their correct chambers?</p>
+                <div class="radio-options">
+                    <label class="radio-label">
+                        <input type="radio" name="confirmation" value="yes" required>
+                        Yes, all ingredients are loaded correctly
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="confirmation" value="no" required>
+                        No, I need to check again
+                    </label>
+                </div>
+                <p class="warning-message">⚠️ Warning: Incorrect loading of ingredients will affect the recipe outcome.</p>
+            </div>
+            <button type="submit" class="proceed-button">
+                <span class="material-icons">restaurant</span>
+                Proceed to Cooking
+            </button>
         </form>
     </div>
+</div>
 
-    <script>
-        function handleConfirmation() {
-            const confirmation = document.querySelector('input[name="confirmation"]:checked').value;
-            if (confirmation === "no") {
-                alert("Cooking can only begin after ingredients are loaded correctly. Please ensure all ingredients are loaded properly.");
-                return false; // Stay on the same page
-            }
-            return true; // Proceed with form submission
+<style>
+.start-cooking-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.recipe-section {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 24px;
+    margin-top: 20px;
+}
+
+h1 {
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h2 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+h3 {
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+}
+
+.ingredients-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.liquid-ingredients, .solid-ingredients {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+}
+
+.instruction-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.instruction-note {
+    color: var(--accent-primary);
+    margin-bottom: 15px;
+}
+
+.chamber-instructions {
+    display: grid;
+    gap: 12px;
+}
+
+.chamber {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.chamber-number {
+    color: var(--accent-primary);
+    font-weight: bold;
+    margin-right: 12px;
+    min-width: 100px;
+}
+
+.ingredient {
+    color: var(--text-secondary);
+}
+
+.confirmation-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 30px 0;
+}
+
+.confirmation-question {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.radio-options {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.warning-message {
+    color: #ff6b6b;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+.proceed-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.proceed-button:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .ingredients-list {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+    function handleConfirmation() {
+        const confirmation = document.querySelector('input[name="confirmation"]:checked').value;
+        if (confirmation === "no") {
+            alert("Please ensure all ingredients are loaded correctly before proceeding.");
+            return false;
         }
-    </script>
+        return true;
+    }
+</script>
 {% endblock %}

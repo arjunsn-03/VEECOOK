@@ -8,10 +8,10 @@
         <div class="recipe-header">
             <img src="{{ url_for('static', filename='images/' + recipe_name + '.jpg') }}" alt="{{ recipe_name }}" class="recipe-image">
             <div class="recipe-info">
-                <h2>{{ recipe_name }}</h2>
+                <h2>{{ recipe_name.replace('_', ' ').title() }}</h2>
                 <div class="cooking-time">
                     <span class="material-icons">timer</span>
-                    <span>{{ recipe['cooking_time'] }} minutes</span>
+                    <span>{{ recipe['cooking_time'] }} seconds</span>
                 </div>
             </div>
         </div>
@@ -19,45 +19,49 @@
         <div class="status-section">
             <div class="timer-section">
                 <h3>Cooking Status</h3>
-                <div class="timer-display">
+                <div class="timer-display" id="timer-display">
                     <span class="material-icons">timer</span>
                     <span id="remaining-time">Calculating...</span>
+                    <span class="current-action" id="current-action"></span>
                 </div>
             </div>
 
-            <div class="arduino-messages">
+            <div class="dispense-updates">
                 <div class="messages-header">
-                    <h3>Arduino Updates</h3>
+                    <h3>Dispense Updates</h3>
                     <button onclick="clearMessages()" class="button secondary">
                         <span class="material-icons">clear_all</span>
                         Clear
                     </button>
                 </div>
                 <div class="messages-container" id="messages-container">
-                    {% for message in arduino_messages %}
-                    <div class="message">{{ message }}</div>
-                    {% endfor %}
+                    <!-- Messages will be dynamically updated here -->
                 </div>
             </div>
         </div>
 
         <div class="recipe-details">
-            <h3>Recipe Details</h3>
-            <div class="ingredients-list">
-                <h4>Ingredients:</h4>
-                <ul>
-                    {% for ingredient, amount in recipe['ingredients'].items() %}
-                    <li>{{ ingredient }}: {{ amount }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="steps-list">
-                <h4>Steps:</h4>
-                <ol>
+            <h3>Recipe Progress</h3>
+            <div class="progress-list">
+                <ul id="progress-steps">
+                    <li class="step" data-time="0">
+                        <span class="step-time">0s</span>
+                        <span class="step-desc">Oil dispensing</span>
+                        <span class="step-status pending" id="step-oil">Pending</span>
+                    </li>
                     {% for step in recipe['steps'] %}
-                    <li>Add {{ step['ingredient'] }} after {{ step['time'] }} minutes</li>
+                    <li class="step" data-time="{{ step['time'] }}">
+                        <span class="step-time">{{ step['time'] }}s</span>
+                        <span class="step-desc">{{ step['ingredient'].replace('_', ' ').title() }}</span>
+                        <span class="step-status pending" id="step-{{ step['ingredient'] }}">Pending</span>
+                    </li>
                     {% endfor %}
-                </ol>
+                    <li class="step" data-time="25">
+                        <span class="step-time">25s</span>
+                        <span class="step-desc">Water dispensing</span>
+                        <span class="step-status pending" id="step-water">Pending</span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -129,49 +133,86 @@
 
 .timer-display {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 24px;
+    gap: 12px;
+    font-size: 32px;
     color: var(--accent-primary);
 }
 
-.arduino-messages {
-    background: var(--bg-primary);
-    border-radius: 12px;
-    padding: 16px;
+.current-action {
+    font-size: 16px;
+    color: var(--text-secondary);
 }
 
-.messages-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.progress-list {
     margin-bottom: 16px;
 }
 
-.messages-header h3 {
+.progress-list ul {
+    list-style: none;
+    padding: 0;
     margin: 0;
-    color: var(--text-primary);
+}
+
+.step {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px;
+    gap: 16px;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.step-time {
+    color: var(--accent-primary);
+    font-weight: bold;
+}
+
+.step-desc {
+    color: var(--text-secondary);
+}
+
+.step-status {
+    text-align: right;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.step-status.pending {
+    color: var(--text-secondary);
+}
+
+.step-status.in-progress {
+    color: #3498db;
+}
+
+.step-status.completed {
+    color: #2ecc71;
 }
 
 .messages-container {
     height: 200px;
     overflow-y: auto;
-    padding: 8px;
+    padding: 12px;
     background: var(--bg-secondary);
     border-radius: 8px;
+    font-family: monospace;
 }
 
 .message {
     padding: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
-    font-family: monospace;
-    font-size: 14px;
 }
 
-.message:last-child {
-    border-bottom: none;
+.message.active {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
 }
 
 .recipe-details {
@@ -183,25 +224,6 @@
 .recipe-details h3 {
     margin: 0 0 16px;
     color: var(--text-primary);
-}
-
-.ingredients-list, .steps-list {
-    margin-bottom: 16px;
-}
-
-.ingredients-list h4, .steps-list h4 {
-    margin: 0 0 8px;
-    color: var(--text-secondary);
-}
-
-.ingredients-list ul, .steps-list ol {
-    margin: 0;
-    padding-left: 20px;
-    color: var(--text-secondary);
-}
-
-.ingredients-list li, .steps-list li {
-    margin-bottom: 4px;
 }
 
 .button {
@@ -244,42 +266,112 @@
 </style>
 
 <script>
+let lastMessageTime = 0;
+
 function updateTimer() {
     fetch(`/get_remaining_time/{{ recipe_name }}`)
         .then(response => response.json())
         .then(data => {
             const remainingTime = data.remaining_time;
+            const elapsedTime = {{ recipe['cooking_time'] }} - remainingTime;
             const minutes = Math.floor(remainingTime / 60);
             const seconds = remainingTime % 60;
-            document.getElementById('remaining-time').textContent = 
-                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const timerDisplay = document.getElementById('remaining-time');
+            const currentAction = document.getElementById('current-action');
             
-            // Update Arduino messages
+            // Update timer display
+            if (remainingTime > 0) {
+                timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                updateCurrentStep(elapsedTime);
+            } else {
+                timerDisplay.textContent = "Cooking completed!";
+                currentAction.textContent = "All steps completed";
+                markAllStepsComplete();
+            }
+            
+            // Update dispense messages
             if (data.arduino_messages && data.arduino_messages.length > 0) {
-                const container = document.getElementById('messages-container');
-                data.arduino_messages.forEach(message => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message';
-                    messageDiv.textContent = message;
-                    container.appendChild(messageDiv);
-                    container.scrollTop = container.scrollHeight;
-                });
+                updateDispenseMessages(data.arduino_messages, elapsedTime);
             }
         });
+}
+
+function updateCurrentStep(elapsedTime) {
+    const steps = document.querySelectorAll('.step');
+    let currentAction = '';
+    
+    steps.forEach(step => {
+        const stepTime = parseInt(step.dataset.time);
+        const stepStatus = step.querySelector('.step-status');
+        
+        if (elapsedTime >= stepTime && elapsedTime < stepTime + 5) {
+            stepStatus.textContent = 'In Progress';
+            stepStatus.className = 'step-status in-progress';
+            currentAction = step.querySelector('.step-desc').textContent;
+        } else if (elapsedTime >= stepTime + 5) {
+            stepStatus.textContent = 'Completed';
+            stepStatus.className = 'step-status completed';
+        } else {
+            stepStatus.textContent = 'Pending';
+            stepStatus.className = 'step-status pending';
+        }
+    });
+    
+    document.getElementById('current-action').textContent = currentAction;
+}
+
+function updateDispenseMessages(messages, elapsedTime) {
+    const container = document.getElementById('messages-container');
+    
+    // Only add new messages
+    messages.forEach(message => {
+        const messageTime = new Date(message.timestamp).getTime();
+        if (messageTime > lastMessageTime) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.textContent = `[${elapsedTime}s] ${message.text}`;
+            
+            if (message.status === 'active') {
+                messageDiv.classList.add('active');
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+            lastMessageTime = messageTime;
+        }
+    });
+}
+
+function markAllStepsComplete() {
+    const steps = document.querySelectorAll('.step');
+    steps.forEach(step => {
+        const stepStatus = step.querySelector('.step-status');
+        stepStatus.textContent = 'Completed';
+        stepStatus.className = 'step-status completed';
+    });
 }
 
 function clearMessages() {
-    fetch('/clear_messages', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                document.getElementById('messages-container').innerHTML = '';
-            }
-        });
+    const container = document.getElementById('messages-container');
+    container.innerHTML = '';
+    lastMessageTime = 0;
 }
 
-// Update timer every second
+// Update every second
 setInterval(updateTimer, 1000);
-updateTimer(); // Initial update
+// Initial update
+updateTimer();
+
+// Reset messages when page loads
+window.onload = function() {
+    clearMessages();
+};
 </script>
+
+<form method="POST" action="{{ url_for('abort_cooking', recipe=recipe_name) }}">
+    <button type="submit" class="abort-button">
+        <span class="material-icons">cancel</span>
+        Abort Cooking
+    </button>
+</form>
 {% endblock %}

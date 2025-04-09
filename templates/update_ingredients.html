@@ -3,88 +3,212 @@
 {% block title %}Update Ingredients{% endblock %}
 
 {% block content %}
-    <div class="container">
+<div class="container">
+    <div class="ingredients-header">
         <h2>Update Ingredients</h2>
-        <form method="POST">
-            {% for ingredient, data in ingredients.items() %}
-            <div class="form-group">
-                <label for="{{ ingredient }}">
-                    {{ ingredient.replace('_', ' ').title() }} 
-                    {% if data.unit == "nos" %}
-                    (nos)
-                    {% else %}
-                    ({{ data.unit }})
-                    {% endif %}
-                </label>
-                <input type="number" 
-                       class="form-control" 
-                       id="{{ ingredient }}" 
-                       name="{{ ingredient }}" 
-                       value="{{ data.amount }}"
-                       min="0">
-            </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary">Update</button>
-        </form>
+        <p class="subtitle">Update the available quantities of ingredients</p>
     </div>
 
-    <style>
-        /* Standard Clean Styling */
-        .container {
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 20px;
-        }
+    <form method="POST">
+        <div class="ingredients-grid">
+            <!-- Liquid Ingredients -->
+            <div class="ingredient-section">
+                <h3>Liquid Ingredients</h3>
+                <div class="ingredients-list">
+                    {% for ingredient in ['water', 'oil'] %}
+                    <div class="form-group">
+                        <label for="{{ ingredient }}">
+                            {{ ingredient.replace('_', ' ').title() }}
+                            <span class="unit">({{ ingredients[ingredient].unit }})</span>
+                            <span class="min-required">Min required: {{ ingredients[ingredient].min_required }}{{ ingredients[ingredient].unit }}</span>
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="{{ ingredient }}" 
+                               name="{{ ingredient }}" 
+                               value="{{ ingredients[ingredient].amount }}"
+                               min="0"
+                               step="any">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
-        h2 {
-            color: #ffffff;
-            text-align: center;
-            margin-bottom: 30px;
-        }
+            <!-- Main Ingredients -->
+            <div class="ingredient-section">
+                <h3>Main Ingredients</h3>
+                <div class="ingredients-list">
+                    {% for ingredient in ['onion', 'carrot', 'peas'] %}
+                    <div class="form-group">
+                        <label for="{{ ingredient }}">
+                            {{ ingredient.replace('_', ' ').title() }}
+                            <span class="unit">({{ ingredients[ingredient].unit }})</span>
+                            <span class="min-required">Min required: {{ ingredients[ingredient].min_required }}{{ ingredients[ingredient].unit }}</span>
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="{{ ingredient }}" 
+                               name="{{ ingredient }}" 
+                               value="{{ ingredients[ingredient].amount }}"
+                               min="0"
+                               step="any">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+            <!-- Spices and Seasonings -->
+            <div class="ingredient-section">
+                <h3>Spices & Seasonings</h3>
+                <div class="ingredients-list">
+                    {% for ingredient in ['spices', 'salt_and_pepper', 'chilly'] %}
+                    <div class="form-group">
+                        <label for="{{ ingredient }}">
+                            {{ ingredient.replace('_', ' ').title() }}
+                            <span class="unit">({{ ingredients[ingredient].unit }})</span>
+                            <span class="min-required">Min required: {{ ingredients[ingredient].min_required }}{{ ingredients[ingredient].unit }}</span>
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="{{ ingredient }}" 
+                               name="{{ ingredient }}" 
+                               value="{{ ingredients[ingredient].amount }}"
+                               min="0"
+                               step="any">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #ffffff;
-            font-weight: 500;
-        }
+        <button type="submit" class="update-button">
+            <span class="material-icons">update</span>
+            Update Ingredients
+        </button>
+    </form>
+</div>
 
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            background: var(--bg-secondary);
-            color: #ffffff;
-            font-size: 16px;
-        }
+<style>
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+}
 
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
+.ingredients-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.ingredients-header h2 {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
 
-        button:hover {
-            background: var(--accent-secondary);
-            transform: translateY(-2px);
-        }
-    </style>
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+.ingredients-grid {
+    display: grid;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.ingredient-section {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ingredient-section h3 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ingredients-list {
+    display: grid;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    color: var(--text-primary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.unit {
+    color: var(--accent-primary);
+    font-size: 14px;
+}
+
+.min-required {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-style: italic;
+}
+
+input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.update-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.update-button:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .ingredients-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .ingredient-section {
+        padding: 20px;
+    }
+}
+</style>
 {% endblock %}

@@ -29,12 +29,14 @@
                 <div class="recipe-details">
                     <div class="detail-item">
                         <span class="material-icons">timer</span>
-                        {{ recipe.cooking_time }} mins
+                        {{ recipe.cooking_time }} seconds
                     </div>
+                    {% if recipe.calories %}
                     <div class="detail-item">
                         <span class="material-icons">local_fire_department</span>
                         {{ recipe.calories }} cal
                     </div>
+                    {% endif %}
                     {% if recipe.veg %}
                     <div class="detail-item">
                         <span class="material-icons">eco</span>
@@ -99,7 +101,8 @@
 .recipes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 32px;
+    gap: 24px;
+    align-items: start;
 }
 
 .recipe-card {
@@ -108,6 +111,9 @@
     overflow: hidden;
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
 }
 
 .recipe-card:hover {
@@ -117,7 +123,7 @@
 
 .recipe-image {
     width: 100%;
-    height: 200px;
+    height: 180px;
     overflow: hidden;
 }
 
@@ -133,25 +139,29 @@
 }
 
 .recipe-content {
-    padding: 24px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .recipe-content h2 {
     font-size: 24px;
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--text-primary);
 }
 
 .recipe-description {
     color: var(--text-secondary);
-    margin-bottom: 20px;
     line-height: 1.5;
+    margin: 0;
+    font-size: 14px;
 }
 
 .recipe-details {
     display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin: 0;
 }
 
 .detail-item {
@@ -167,21 +177,27 @@
     color: var(--accent-primary);
 }
 
-.primary-button {
+.button {
     width: 100%;
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
-    color: white !important;
-    padding: 12px 24px !important;
-    border-radius: 12px !important;
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-size: 16px !important;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
     transition: all 0.3s ease;
+    margin-top: 12px;
+    align-self: center;
+    max-width: 200px;
 }
 
-.primary-button:hover {
+.button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
 }
@@ -196,12 +212,16 @@
     }
 
     .recipes-grid {
-        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .recipe-card {
-        margin: 0 -20px;
-        border-radius: 0;
+        margin: 0;
+        border-radius: 20px;
+    }
+
+    .button {
+        max-width: 100%;
     }
 }
 </style>
